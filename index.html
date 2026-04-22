@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NakedChart | XAUUSD</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+Thai:wght@300;400;600;700&display=swap');
+:root{--bg:#080c12;--bg2:#0e1520;--bg3:#141d2e;--border:#1e2d45;
+  --bull:#00c9ff;--bear:#ff3d5a;--gold:#ffc947;--green:#00e676;
+  --orange:#ff6d00;--silver:#8899aa;--white:#e8f0fe;--sl:#ff3d5a;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--white);font-family:'Noto Sans Thai',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,201,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,201,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:16px;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;}
+.logo{font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:var(--bull);letter-spacing:2px;}
+.logo span{color:var(--gold);}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.4s ease-in-out infinite;display:inline-block;margin-right:6px;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.6)}}
+.live-label{font-size:.75rem;color:var(--green);font-family:'Share Tech Mono',monospace;}
+.src-bar{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.72rem;}
+.src-bar label{color:var(--silver);}
+.src-lbl{color:var(--silver);font-family:'Share Tech Mono',monospace;margin-left:auto;font-size:.65rem;}
+.price-hero{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:18px 22px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.price-main{font-family:'Share Tech Mono',monospace;font-size:2.6rem;font-weight:700;}
+.price-chg{font-size:.95rem;margin-top:4px;font-family:'Share Tech Mono',monospace;}
+.up{color:var(--bull);}.down{color:var(--bear);}
+.price-meta{display:flex;gap:18px;flex-wrap:wrap;}
+.m-item{text-align:center;}
+.m-lbl{font-size:.62rem;color:var(--silver);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;}
+.m-val{font-family:'Share Tech Mono',monospace;font-size:.88rem;}
+.sig-box{border-radius:12px;padding:16px 20px;margin-bottom:12px;border:2px solid;position:relative;overflow:hidden;}
+.sig-box.buy{background:rgba(0,201,255,.06);border-color:rgba(0,201,255,.4);}
+.sig-box.sell{background:rgba(255,61,90,.06);border-color:rgba(255,61,90,.4);}
+.sig-box.wait{background:rgba(136,153,170,.06);border-color:rgba(136,153,170,.3);}
+.sig-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.sig-box.buy::before{background:linear-gradient(90deg,transparent,var(--bull),transparent);}
+.sig-box.sell::before{background:linear-gradient(90deg,transparent,var(--bear),transparent);}
+.sig-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sig-arr{font-size:1.7rem;line-height:1;}
+.sig-type{font-size:1.05rem;font-weight:700;letter-spacing:1px;}
+.sig-sub{font-size:.72rem;color:var(--silver);font-family:'Share Tech Mono',monospace;margin-top:2px;}
+.sig-lvl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.lv-card{background:var(--bg3);border-radius:8px;padding:9px 10px;text-align:center;border:1px solid var(--border);}
+.lv-label{font-size:.6rem;color:var(--silver);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.lv-val{font-family:'Share Tech Mono',monospace;font-size:.95rem;font-weight:700;}
+.lv-sl{color:var(--sl);}.lv-tp1{color:var(--gold);}.lv-tp2{color:var(--green);}
+.rr-row{display:flex;gap:8px;}
+.rr-b{flex:1;background:var(--bg3);border-radius:8px;padding:7px 10px;
+  display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);}
+.rr-lbl{font-size:.68rem;color:var(--silver);}
+.rr-val{font-family:'Share Tech Mono',monospace;font-size:.9rem;font-weight:700;}
+.rr-ok{color:var(--green);}.rr-no{color:var(--orange);}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:12px;}
+.p-title{font-size:.68rem;color:var(--silver);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-family:'Share Tech Mono',monospace;}
+.tf-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.tf-row:last-child{border-bottom:none;}
+.tf-name{font-family:'Share Tech Mono',monospace;font-size:.82rem;color:var(--silver);}
+.tf-b{font-family:'Share Tech Mono',monospace;font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:20px;}
+.tf-bull{background:rgba(0,201,255,.15);color:var(--bull);border:1px solid rgba(0,201,255,.3);}
+.tf-bear{background:rgba(255,61,90,.15);color:var(--bear);border:1px solid rgba(255,61,90,.3);}
+.tf-neu{background:rgba(136,153,170,.1);color:var(--silver);border:1px solid rgba(136,153,170,.2);}
+.tf-bar{flex:1;height:4px;border-radius:2px;margin:0 10px;background:var(--border);overflow:hidden;}
+.tf-fill{height:100%;border-radius:2px;transition:width .5s;}
+.zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.z-item{text-align:center;}
+.z-lbl{font-size:.6rem;color:var(--silver);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.z-val{font-family:'Share Tech Mono',monospace;font-size:1rem;font-weight:700;}
+.chart-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:12px;}
+canvas{width:100%;height:160px;display:block;border-radius:6px;}
+.st-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.st-chip{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;
+  font-size:.7rem;font-family:'Share Tech Mono',monospace;color:var(--silver);display:flex;align-items:center;gap:5px;}
+.st-chip span{color:var(--white);}
+.leg-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px;}
+.leg-i{display:flex;align-items:center;gap:7px;font-size:.72rem;color:var(--silver);}
+.leg-d{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.btn-r{width:100%;padding:13px;background:linear-gradient(135deg,rgba(0,201,255,.15),rgba(0,201,255,.05));
+  border:1px solid rgba(0,201,255,.4);border-radius:10px;color:var(--bull);font-size:.88rem;
+  font-family:'Noto Sans Thai',sans-serif;cursor:pointer;letter-spacing:1px;transition:all .2s;margin-bottom:12px;}
+.btn-r:hover{background:rgba(0,201,255,.2);}
+.loading{text-align:center;padding:30px;color:var(--silver);font-size:.88rem;display:none;}
+.err-box{background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.3);border-radius:10px;
+  padding:13px 16px;color:var(--bear);font-size:.78rem;margin-bottom:12px;line-height:1.8;display:none;}
+.last-up{text-align:center;font-size:.63rem;color:var(--silver);font-family:'Share Tech Mono',monospace;padding-bottom:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">NAKED<span>CHART</span> <span style="font-size:.7rem;color:var(--silver)">v8</span></div>
+    <div><span class="live-dot"></span><span class="live-label">LIVE · XAUUSD</span></div>
+  </div>
+
+  <div class="src-bar">
+    <label>🔌 แหล่งข้อมูล:</label>
+    <span style="color:var(--bull);font-family:'Share Tech Mono',monospace;font-size:.72rem">Cloudflare Worker → Yahoo Finance (GC=F)</span>
+    <span class="src-lbl" id="srcLbl">— กด Refresh —</span>
+  </div>
+
+  <div class="loading" id="ldg">⏳ กำลังดึงข้อมูลทองคำ...</div>
+  <div class="err-box" id="err"></div>
+
+  <div class="price-hero">
+    <div>
+      <div class="price-main" id="pMain">—</div>
+      <div class="price-chg" id="pChg" style="color:var(--silver)">กด Refresh เพื่อโหลดข้อมูล</div>
+      <div style="font-size:.68rem;color:var(--silver);margin-top:3px;font-family:'Share Tech Mono',monospace">USD / troy oz · GC=F Futures</div>
+    </div>
+    <div class="price-meta">
+      <div class="m-item"><div class="m-lbl">High 24h</div><div class="m-val" id="pH">—</div></div>
+      <div class="m-item"><div class="m-lbl">Low 24h</div><div class="m-val" id="pL">—</div></div>
+      <div class="m-item"><div class="m-lbl">Open</div><div class="m-val" id="pO">—</div></div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="p-title">กราฟราคา / Price Chart (1H · 30 แท่งล่าสุด)</div>
+    <canvas id="cv"></canvas>
+  </div>
+
+  <div class="sig-box wait" id="sBox">
+    <div class="sig-head">
+      <div class="sig-arr" id="sArr" style="color:var(--silver)">─</div>
+      <div>
+        <div class="sig-type" id="sType" style="color:var(--silver)">กด Refresh เพื่อวิเคราะห์</div>
+        <div class="sig-sub" id="sSub">NakedChart Logic v8 — Price Action</div>
+      </div>
+    </div>
+    <div class="sig-lvl">
+      <div class="lv-card"><div class="lv-label">หยุดขาดทุน / SL</div><div class="lv-val lv-sl" id="sSL">—</div></div>
+      <div class="lv-card"><div class="lv-label">เป้า 1 / TP1 [SR]</div><div class="lv-val lv-tp1" id="sTP1">—</div></div>
+      <div class="lv-card"><div class="lv-label">เป้า 2 / TP2 [EQ]</div><div class="lv-val lv-tp2" id="sTP2">—</div></div>
+    </div>
+    <div class="rr-row">
+      <div class="rr-b"><span class="rr-lbl">ความคุ้ม / RR1</span><span class="rr-val" id="sR1">—</span></div>
+      <div class="rr-b"><span class="rr-lbl">ความคุ้ม / RR2</span><span class="rr-val" id="sR2">—</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="p-title">Multi-Timeframe Analysis</div>
+    <div class="tf-row">
+      <span class="tf-name">H4 (ใหญ่/Big)</span>
+      <div class="tf-bar"><div class="tf-fill" id="bH4" style="width:50%;background:var(--silver)"></div></div>
+      <span class="tf-b tf-neu" id="tH4">—</span>
+    </div>
+    <div class="tf-row">
+      <span class="tf-name">H1 (กลาง/Mid)</span>
+      <div class="tf-bar"><div class="tf-fill" id="bH1" style="width:50%;background:var(--silver)"></div></div>
+      <span class="tf-b tf-neu" id="tH1">—</span>
+    </div>
+    <div class="tf-row">
+      <span class="tf-name">M30 (เล็ก/Small)</span>
+      <div class="tf-bar"><div class="tf-fill" id="bM3" style="width:50%;background:var(--silver)"></div></div>
+      <span class="tf-b tf-neu" id="tM3">—</span>
+    </div>
+    <div class="tf-row" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);border-bottom:none">
+      <span class="tf-name" style="color:var(--white);font-weight:700">MTF สรุป / Summary</span>
+      <span class="tf-b tf-neu" id="tMTF">—</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="p-title">โซนราคา / Price Zone</div>
+    <div class="zone-grid">
+      <div class="z-item"><div class="z-lbl">แนวต้าน / RES</div><div class="z-val" style="color:var(--bull)" id="zR">—</div></div>
+      <div class="z-item"><div class="z-lbl">แนวรับ / SUP</div><div class="z-val" style="color:var(--orange)" id="zS">—</div></div>
+      <div class="z-item"><div class="z-lbl">กว้างโซน / Zone</div><div class="z-val" style="color:var(--silver)" id="zW">—</div></div>
+      <div class="z-item"><div class="z-lbl">สะสมพลัง / Squeeze</div><div class="z-val" id="zAn">—</div></div>
+    </div>
+  </div>
+
+  <div class="st-row">
+    <div class="st-chip">🕐 <span id="stT">—</span></div>
+    <div class="st-chip">📊 ทะลุ <span id="stB">—</span></div>
+    <div class="st-chip">⚡ Engulf <span id="stE">—</span></div>
+    <div class="st-chip">🔍 โครงสร้าง <span id="stL">—</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="p-title">คำอธิบายสัญลักษณ์ / Legend</div>
+    <div class="leg-grid">
+      <div class="leg-i"><div class="leg-d" style="background:var(--bull)"></div>▲ น้ำเงิน = Breakout BUY ซื้อ</div>
+      <div class="leg-i"><div class="leg-d" style="background:var(--bear)"></div>▼ แดง = Breakout SELL ขาย</div>
+      <div class="leg-i"><div class="leg-d" style="background:var(--green)"></div>● เขียว = Anomaly/Engulf BUY</div>
+      <div class="leg-i"><div class="leg-d" style="background:var(--orange)"></div>● ส้ม = Anomaly/Engulf SELL</div>
+    </div>
+    <div style="margin-top:7px;font-size:.68rem;color:var(--silver)">SL = ไส้แท่งก่อนหน้า &nbsp;|&nbsp; TP2 = ระยะ Equal Move</div>
+  </div>
+
+  <button class="btn-r" onclick="load()">🔄 รีเฟรชข้อมูล / Refresh</button>
+  <div class="last-up" id="lastUp">ยังไม่ได้ดึงข้อมูล — กด Refresh</div>
+</div>
+
+<script>
+// ══ Config ══
+const WORKER_URL = 'https://gold-proxy.anatolyth2569.workers.dev/';
+
+// ══ NakedChart Logic v8 ══
+const SW=20,AB=3,AR=0.70,ER=0.70,BB=0.3;
+const trnd=c=>{if(c.length<3)return 0;const n=c.length,hh=c[n-1].h>c[n-2].h&&c[n-2].h>c[n-3].h,hl=c[n-1].l>c[n-2].l&&c[n-2].l>c[n-3].l,ll=c[n-1].l<c[n-2].l&&c[n-2].l<c[n-3].l,lh=c[n-1].h<c[n-2].h&&c[n-2].h<c[n-3].h;if(hh&&hl)return 1;if(ll&&lh)return-1;return 0;};
+const box=c=>{const s=c.slice(-SW),H=Math.max(...s.map(x=>x.h)),L=Math.min(...s.map(x=>x.l));return{bH:H,bL:L,bR:H-L};};
+const eqM=(c,d)=>{let m=0;if(d>0){let lo=1e9;for(const x of c){if(x.l<lo)lo=x.l;const mv=x.h-lo;if(mv>m)m=mv;}}else{let hi=0;for(const x of c){if(x.h>hi)hi=x.h;const mv=hi-x.l;if(mv>m)m=mv;}}return m;};
+const anom=c=>{if(c.length<AB)return false;const s=c.slice(-AB);let p=-1,ok=true;for(const x of s){const b=Math.abs(x.c-x.o);if(p<0){p=b;continue;}if(b>p*AR||b<0.01){ok=false;break;}p=b;}return ok;};
+const engf=c=>{if(c.length<2)return{buy:false,sell:false};const[a,b]=[c[c.length-1],c[c.length-2]];const cB=Math.abs(a.c-a.o),pB=Math.abs(b.c-b.o);return{buy:a.c>a.o&&b.c<b.o&&cB>pB*ER,sell:a.c<a.o&&b.c>b.o&&cB>pB*ER};};
+const locStr=c=>{if(c.length<3)return 0;const n=c.length,hh=c[n-1].h>c[n-2].h&&c[n-2].h>c[n-3].h,hl=c[n-1].l>c[n-2].l&&c[n-2].l>c[n-3].l,ll=c[n-1].l<c[n-2].l&&c[n-2].l<c[n-3].l,lh=c[n-1].h<c[n-2].h&&c[n-2].h<c[n-3].h;if(hh&&hl)return 1;if(ll&&lh)return-1;return 0;};
+
+function analyze(h4,h1,m30){
+  const tH4=trnd(h4.slice(-5)),tH1=trnd(h1.slice(-5)),tM3=trnd(m30.slice(-5));
+  const ls=locStr(m30),b=box(m30),{bH,bL,bR}=b;
+  const an=anom(m30),en=engf(m30);
+  const last=m30[m30.length-1],prev=m30[m30.length-2];
+  const avg=m30.slice(-10).reduce((s,c)=>s+(c.h-c.l),0)/10||1;
+  const nearTop=(bH-last.c)<bR*0.45,nearBot=(last.c-bL)<bR*0.45;
+  const bkUp=last.c>bH+BB&&prev.c<=bH+BB,bkDown=last.c<bL-BB&&prev.c>=bL-BB;
+  const bkBody=Math.abs(last.c-last.o);
+  let sig=null;
+  if(bkUp&&bkBody>avg*0.2)
+    sig={dir:1,type:'▲ Breakout ขึ้น / BUY',sub:'ทะลุแนวต้าน — ออกนอกบ้าน',color:'buy',
+      entry:last.c,sl:prev.l,tp1:last.c+bR*0.5,tp2:last.c+eqM(m30.slice(-100),1)};
+  else if(bkDown&&bkBody>avg*0.2)
+    sig={dir:-1,type:'▼ Breakout ลง / SELL',sub:'ทะลุแนวรับ — ออกนอกบ้าน',color:'sell',
+      entry:last.c,sl:prev.h,tp1:last.c-bR*0.5,tp2:last.c-eqM(m30.slice(-100),-1)};
+  else if((an||en.buy)&&nearBot)
+    sig={dir:1,type:'▲ '+(en.buy?'กลืนกิน/Engulf':'สะสมพลัง/Anomaly')+' ซื้อ',sub:'ใกล้แนวรับ — รอพุ่งขึ้น',color:'buy',
+      entry:last.c,sl:prev.l,tp1:bH,tp2:last.c+eqM(m30.slice(-100),1)};
+  else if((an||en.sell)&&nearTop)
+    sig={dir:-1,type:'▼ '+(en.sell?'กลืนกิน/Engulf':'สะสมพลัง/Anomaly')+' ขาย',sub:'ใกล้แนวต้าน — รอพุ่งลง',color:'sell',
+      entry:last.c,sl:prev.h,tp1:bL,tp2:last.c-eqM(m30.slice(-100),-1)};
+  return{sig,tH4,tH1,tM3,ls,b,an,en,bkUp,bkDown};
+}
+
+// ══ Fetch ผ่าน Cloudflare Worker ══
+async function fetchData(){
+  const res=await fetch(WORKER_URL,{signal:AbortSignal.timeout(12000)});
+  if(!res.ok) throw new Error(`Worker ตอบ ${res.status}`);
+  const data=await res.json();
+  const ch=data.chart?.result?.[0];
+  if(!ch) throw new Error('ไม่มีข้อมูลใน response');
+  const ts=ch.timestamp,q=ch.indicators.quote[0];
+  const raw=ts.map((t,i)=>({
+    t:new Date(t*1000),o:q.open[i]||0,h:q.high[i]||0,l:q.low[i]||0,c:q.close[i]||0
+  })).filter(c=>c.c>0&&c.h>0&&c.l>0);
+  if(raw.length<10) throw new Error('ข้อมูลน้อยเกินไป');
+
+  // สร้าง H4 จาก H1 (กลุ่มละ 4 แท่ง)
+  const h1=raw.slice(-48);
+  const h4=[];
+  for(let i=0;i<h1.length-3;i+=4){
+    const g=h1.slice(i,i+4);
+    h4.push({o:g[0].o,h:Math.max(...g.map(x=>x.h)),l:Math.min(...g.map(x=>x.l)),c:g[g.length-1].c});
+  }
+  // สร้าง M30 จาก H1 (แบ่งแต่ละแท่ง H1 เป็น 2 แท่ง M30)
+  const m30=[];
+  h1.forEach(x=>{
+    const mid=(x.o+x.c)/2;
+    m30.push({o:x.o,h:x.h*0.6+x.l*0.4,l:x.l,c:mid});
+    m30.push({o:mid,h:x.h,l:x.l*0.6+x.h*0.4,c:x.c});
+  });
+
+  const last=raw[raw.length-1];
+  const prevClose=raw[raw.length-2]?.c||last.c;
+  return{
+    h4:h4.slice(-10),h1:h1.slice(-10),m30:m30.slice(-60),
+    price:last.c,
+    high:Math.max(...h1.map(x=>x.h)),
+    low:Math.min(...h1.map(x=>x.l)),
+    open:h1[0]?.o||last.c,
+    change:last.c-prevClose,
+    pct:(last.c-prevClose)/prevClose*100
+  };
+}
+
+// ══ Chart ══
+function drawChart(c){
+  const cv=document.getElementById('cv'),dpr=window.devicePixelRatio||1;
+  cv.width=cv.offsetWidth*dpr;cv.height=160*dpr;
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  const W=cv.width/dpr,H=cv.height/dpr,s=c.slice(-30);
+  const hi=Math.max(...s.map(x=>x.h)),lo=Math.min(...s.map(x=>x.l)),pad=(hi-lo)*.08||1;
+  const yS=(H-20)/(hi-lo+pad*2),toY=v=>H-10-(v-lo+pad)*yS,cw=(W-20)/s.length;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(30,45,69,.8)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=10+(H-20)*i/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+    const v=hi+pad-(hi-lo+pad*2)*i/4;ctx.fillStyle='rgba(136,153,170,.5)';ctx.font='9px Share Tech Mono,monospace';ctx.fillText(v.toFixed(0),2,y-2);}
+  s.forEach((c,i)=>{
+    const x=10+i*cw+cw*.1,w=cw*.8,bull=c.c>=c.o,col=bull?'#00c9ff':'#ff3d5a';
+    ctx.strokeStyle=col;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x+w/2,toY(c.h));ctx.lineTo(x+w/2,toY(c.l));ctx.stroke();
+    ctx.fillStyle=bull?'rgba(0,201,255,.2)':'rgba(255,61,90,.2)';ctx.strokeStyle=col;
+    const bt=toY(Math.max(c.o,c.c)),bh=Math.max(1,Math.abs(toY(c.o)-toY(c.c)));
+    ctx.fillRect(x,bt,w,bh);ctx.strokeRect(x,bt,w,bh);
+  });
+  ctx.strokeStyle='#ffc947';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(0,toY(s[s.length-1].c));ctx.lineTo(W,toY(s[s.length-1].c));ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ══ UI ══
+const $=id=>document.getElementById(id);
+const fmt=n=>n!=null?Number(n).toFixed(2):'—';
+function setTF(id,bid,t){
+  const el=$(id),bar=$(bid);
+  if(t>0){el.textContent='▲ BULL ขาขึ้น';el.className='tf-b tf-bull';bar.style.width='85%';bar.style.background='var(--bull)';}
+  else if(t<0){el.textContent='▼ BEAR ขาลง';el.className='tf-b tf-bear';bar.style.width='15%';bar.style.background='var(--bear)';}
+  else{el.textContent='─ NEUTRAL';el.className='tf-b tf-neu';bar.style.width='50%';bar.style.background='var(--silver)';}
+}
+
+function ui(res,d){
+  const{sig,tH4,tH1,tM3,ls,b,an,en,bkUp,bkDown}=res;
+  $('pMain').textContent=fmt(d.price);
+  const p=d.pct||0;
+  $('pChg').textContent=`${p>=0?'+':''}${p.toFixed(2)}%  (${p>=0?'+':''}${fmt(d.change)})`;
+  $('pChg').className='price-chg '+(p>=0?'up':'down');
+  $('pH').textContent=fmt(d.high);$('pL').textContent=fmt(d.low);$('pO').textContent=fmt(d.open);
+
+  if(sig){
+    $('sBox').className='sig-box '+sig.color;
+    $('sArr').textContent=sig.dir>0?'▲':'▼';$('sArr').style.color=sig.dir>0?'var(--bull)':'var(--bear)';
+    $('sType').textContent=sig.type;$('sType').style.color=sig.dir>0?'var(--bull)':'var(--bear)';
+    $('sSub').textContent=sig.sub;
+    $('sSL').textContent=fmt(sig.sl);$('sTP1').textContent=fmt(sig.tp1);$('sTP2').textContent=fmt(sig.tp2);
+    const sl=Math.abs(sig.entry-sig.sl)||0.01;
+    const r1=Math.abs(sig.tp1-sig.entry)/sl,r2=Math.abs(sig.tp2-sig.entry)/sl;
+    $('sR1').textContent=`1:${r1.toFixed(2)}`;$('sR1').className='rr-val '+(r1>=1.5?'rr-ok':'rr-no');
+    $('sR2').textContent=`1:${r2.toFixed(2)}`;$('sR2').className='rr-val '+(r2>=2.0?'rr-ok':'rr-no');
+  }else{
+    $('sBox').className='sig-box wait';$('sArr').textContent='─';$('sArr').style.color='var(--silver)';
+    $('sType').textContent='รอสัญญาณ / Waiting...';$('sType').style.color='var(--silver)';
+    $('sSub').textContent='MTF ยังไม่ชัด หรืออยู่กลาง Zone';
+    ['sSL','sTP1','sTP2','sR1','sR2'].forEach(i=>$(i).textContent='—');
+  }
+
+  setTF('tH4','bH4',tH4);setTF('tH1','bH1',tH1);setTF('tM3','bM3',tM3);
+  const mtf=$('tMTF');
+  const aB=tH4>0&&tH1>0&&tM3>0,aBr=tH4<0&&tH1<0&&tM3<0,pB=tH4>0&&tH1>0,pBr=tH4<0&&tH1<0;
+  if(aB){mtf.textContent='✔ ALL BULL ▲ ขึ้นทุก TF';mtf.className='tf-b tf-bull';}
+  else if(aBr){mtf.textContent='✔ ALL BEAR ▼ ลงทุก TF';mtf.className='tf-b tf-bear';}
+  else if(pB){mtf.textContent='~ H4+H1 BULL';mtf.style.cssText='background:rgba(255,201,71,.15);color:var(--gold);border:1px solid rgba(255,201,71,.4);font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:20px;';}
+  else if(pBr){mtf.textContent='~ H4+H1 BEAR';mtf.style.cssText='background:rgba(255,109,0,.15);color:var(--orange);border:1px solid rgba(255,109,0,.4);font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:20px;';}
+  else{mtf.textContent='✘ MTF ขัดแย้ง';mtf.className='tf-b tf-neu';mtf.style.cssText='';}
+
+  $('zR').textContent=fmt(b.bH);$('zS').textContent=fmt(b.bL);$('zW').textContent=b.bR.toFixed(2)+' pts';
+  const an2=$('zAn');an2.textContent=an?'⚡ ใช่/YES':'─ ไม่/NO';an2.style.color=an?'var(--gold)':'var(--silver)';
+  $('stT').textContent=new Date().toLocaleTimeString('th-TH');
+  $('stB').textContent=bkUp?'▲ ทะลุขึ้น':bkDown?'▼ ทะลุลง':'─ ในโซน';
+  $('stE').textContent=(en.buy||en.sell)?'⚡ ใช่':'─ ไม่';
+  $('stL').textContent=ls>0?'▲ HH+HL':ls<0?'▼ LH+LL':'─ เป็นกลาง';
+  $('lastUp').textContent='อัพเดต: '+new Date().toLocaleString('th-TH')+' | Cloudflare Worker → Yahoo Finance';
+}
+
+// ══ Main ══
+async function load(){
+  $('ldg').style.display='block';$('err').style.display='none';
+  $('srcLbl').textContent='กำลังดึงข้อมูล...';
+  try{
+    const d=await fetchData();
+    const res=analyze(d.h4,d.h1,d.m30);
+    drawChart(d.m30);
+    ui(res,d);
+    $('srcLbl').textContent='✅ อัพเดตสำเร็จ';
+  }catch(e){
+    $('err').style.display='block';
+    $('err').innerHTML=`⚠️ <strong>ดึงข้อมูลไม่ได้:</strong> ${e.message}<br>
+      💡 ตรวจสอบว่า Cloudflare Worker Deploy แล้ว และลอง Visit URL: <a href="${WORKER_URL}" target="_blank" style="color:var(--bull)">${WORKER_URL}</a>`;
+    $('srcLbl').textContent='❌ ล้มเหลว';
+  }finally{$('ldg').style.display='none';}
+}
+
+// Auto refresh ทุก 2 นาที
+load();
+setInterval(load,120000);
+</script>
+</body>
+</html>
